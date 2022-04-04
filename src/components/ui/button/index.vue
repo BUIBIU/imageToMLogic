@@ -1,5 +1,9 @@
 <template>
-  <div class="m-button" @click="onClick" :class="{ checked: checked }">
+  <div
+    class="m-button"
+    @click="onClick"
+    :class="{ checked: checked, error: error }"
+  >
     <div class="m-button-flex">
       <div class="m-button-icon" v-if="icon">
         <img :src="iconUrl" />
@@ -26,6 +30,10 @@ export default {
       default: '',
     },
     checked: {
+      type: Boolean,
+      default: false,
+    },
+    error: {
       type: Boolean,
       default: false,
     },
@@ -66,7 +74,10 @@ export default {
   cursor: pointer;
 
   &.checked {
-    background-color: rgb(255, 211, 127) !important;
+    background-color: rgb(255, 211, 127);
+  }
+  &.error {
+    background-color: rgb(229, 84, 84);
   }
 
   &:hover {
@@ -98,6 +109,9 @@ export default {
       $borderWidth $borderCut2
     );
   }
+  & + & {
+    margin-left: 10px;
+  }
   .m-button-flex {
     user-select: none;
     height: 100%;
@@ -116,6 +130,7 @@ export default {
       }
     }
     .m-button-text {
+      flex: 1;
       padding: 0 20px;
       display: flex;
       flex-direction: row;
@@ -128,7 +143,7 @@ export default {
 }
 </style>
 <style lang="scss">
-.m-button + .m-button {
-  margin-left: 10px;
-}
+// .m-button + .m-button {
+//   margin-left: 10px;
+// }
 </style>

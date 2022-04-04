@@ -79,7 +79,7 @@
             :key="index"
             :checked="option.compress === index"
             :text="index"
-            @click="option.compress = index"
+            @click="setCompress(index)"
           />
         </span>
       </div>
@@ -100,7 +100,39 @@
       </div>
       <div class="form-item">
         <span class="form-item-label">显示器</span>
-        <span><mInput v-model="option.dispalyName" /> </span>
+        <span
+          ><mInput v-model="option.screenName" @input="changeScreenName" />
+        </span>
+      </div>
+      <div class="form-item">
+        <mButton icon="play-2" text="开始转换" @click="getMlog" />
+      </div>
+    </div>
+    <div>
+      <textarea
+        ref="codeTextarea"
+        class="code-textarea"
+        v-model="code"
+      ></textarea>
+    </div>
+    <div class="code-list">
+      <div class="code-item" v-for="(chips, index) in screenMlog" :key="index">
+        <div class="code-title">
+          <div style="width: 80px">屏幕{{ index }}</div>
+          <!-- <div>
+            ( {{ index % option.screenX }} ,
+            {{ Math.floor(index / option.screenX) }} )
+          </div> -->
+        </div>
+        <div class="code-botton-list">
+          <mButton
+            v-for="(chip, index2) in chips"
+            :key="index2"
+            :text="index2"
+            :error="chip.copyed"
+            @click="copyCode(chip)"
+          />
+        </div>
       </div>
     </div>
   </div>
@@ -129,8 +161,8 @@ export default {
       haveImage: false,
       option: {
         resolution: 176,
-        compress: 2,
-        dispalyName: 'display',
+        compress: 5,
+        screenName: 'display1',
         screenX: 1,
         screenY: 1,
         aspect: [1, 1],
@@ -139,13 +171,18 @@ export default {
       previewCnavas: null,
       outImage: null,
       previewTimer: null,
+      code: '',
+      screenMlog: [],
     }
   },
   methods: {
     loadFile(e) {
       this.haveImage = true
       var reader = new FileReader()
-      reader.readAsDataURL(e.target.files[0])
+      if (e.target.files.length != 0) {
+        this.loading = true
+        reader.readAsDataURL(e.target.files[0])
+      }
       reader.onload = e => {
         this.url = e.target.result
       }
@@ -180,6 +217,10 @@ export default {
           break
       }
     },
+    setCompress(n) {
+      this.option.compress = n
+      this.previewCnavas.setCompress(n)
+    },
     cropperChanged() {
       if (this.previewTimer) {
         clearTimeout(this.previewTimer)
@@ -198,9 +239,36 @@ export default {
       this.previewCnavas.setSreenIgnoreBorder(ignoreBorder)
       this.screenSizeChange()
     },
+    getMlog() {
+      let screenMlog = this.previewCnavas.imageToMLogic()
+      screenMlog.forEach(chips => {
+        for (let i = 0; i < chips.length; i++) {
+          let chip = chips[i]
+          chips[i] = {
+            code: chip,
+            copyed: false,
+          }
+        }
+      })
+
+      this.screenMlog = screenMlog
+    },
+    changeScreenName() {
+      this.previewCnavas.setScreenName(this.option.screenName)
+    },
+    copyCode(chip) {
+      console.log(chip)
+      this.code = chip.code
+      this.$set(chip, 'copyed', true)
+      this.$nextTick(() => {
+        this.$refs.codeTextarea.select()
+        document.execCommand('copy')
+      })
+    },
   },
   mounted() {
     this.previewCnavas = new PreviewCnavas(this.$refs.previewImage)
+    this.changeScreenName()
   },
   destroyed() {
     if (this.previewTimer) {
@@ -273,7 +341,16 @@ style
     width: 90px;
   }
 }
-
+.code-textarea {
+  width: 0px;
+  height: 0px;
+  background-color: transparent;
+  position: absolute;
+  left: -10px;
+  top: 0;
+  border: none;
+  resize: none;
+}
 // @media screen and (max-width: 800px) {
 //   .image-editer {
 //     flex-direction: column;
@@ -283,4 +360,24 @@ style
 //     height: 400px;
 //   }
 // }
+.code-list {
+  .code-item {
+    margin: 30px 0;
+    .code-title {
+      color: rgb(255, 211, 127);
+      border-bottom: 4px rgb(255, 211, 127) solid;
+      margin-bottom: 8px;
+      display: flex;
+    }
+    .code-botton-list {
+      .m-button {
+        width: 65px;
+        margin: 5px;
+      }
+    }
+    &:last-child {
+      margin-bottom: 100px;
+    }
+  }
+}
 </style>
