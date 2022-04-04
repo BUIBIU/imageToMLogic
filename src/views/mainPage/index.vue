@@ -1,30 +1,46 @@
 <template>
-  <div class="mainPage">
-    <van-button type="primary">主要按钮</van-button>
-    <van-button type="info">信息按钮</van-button>
-    <van-button type="default">默认按钮</van-button>
-    <van-button type="warning">警告按钮</van-button>
-    <van-button type="danger">危险按钮</van-button>
-    ABCDEFG123456789
-    <m-button></m-button>
+  <div class="background">
+    <div class="mainPage">
+      <imageEditer />
+    </div>
   </div>
 </template>
 
 <script>
-import mButton from "@/components/ui/button";
+import imageEditer from '@/components/imageEditer'
 export default {
   components: {
-    mButton,
+    imageEditer,
   },
-};
+  mounted() {},
+}
 </script>
 
 <style lang="scss" scoped>
 @font-face {
-  font-family: "mindustry-font";
-  src: url("/font/font.woff");
+  font-family: 'mindustry-font';
+  src: url('/font/font.woff');
+}
+.background {
+  height: 100%;
+  width: 100%;
+  background-image: url('/images/blocks/environment/background.png');
+  overflow: auto;
 }
 .mainPage {
-  font-family: "mindustry-font";
+  width: 1000px;
+  padding: 10px;
+  padding-top: 50px;
+  min-height: 100%;
+  margin: 0 auto;
+  font-family: 'mindustry-font';
+  color: white;
+  background-color: rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+</style>
+<style lang="scss">
+::selection {
+  background-color: rgb(95, 83, 89);
 }
 </style>
