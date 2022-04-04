@@ -162,8 +162,8 @@ export default class PreviewCanvas {
         let screenY = this.screenOption.screenCount.y
         let { size, image, border, resolution } = this.screenOption.screenData
 
-        for (let x = 0; x < screenX; x++) {
-            for (let y = 0; y < screenY; y++) {
+        for (let y = 0; y < screenX; y++) {
+            for (let x = 0; x < screenY; x++) {
                 let posX = x * size
                 let posY = y * size
                 ctx.drawImage(image, posX, posY)
@@ -181,8 +181,8 @@ export default class PreviewCanvas {
             }
             let realSizeX = resolution * scale
             let realSizeY = realSizeX
-            for (let x = 0; x < screenX; x++) {
-                for (let y = 0; y < screenY; y++) {
+            for (let y = 0; y < screenX; y++) {
+                for (let x = 0; x < screenY; x++) {
                     let posX = x * size
                     let posY = y * size
                     let cutPosX = 0
