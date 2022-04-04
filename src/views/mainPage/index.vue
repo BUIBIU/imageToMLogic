@@ -24,7 +24,7 @@ export default {
 .background {
   height: 100%;
   width: 100%;
-  background-image: url('/images/blocks/environment/background.png');
+  background-image: url('/imageToMLogicPage/images/blocks/environment/background.png');
   overflow: auto;
 }
 .mainPage {

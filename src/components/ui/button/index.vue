@@ -40,7 +40,7 @@ export default {
   },
   computed: {
     iconUrl() {
-      return `/images/icons/${this.icon}.png`
+      return `/imageToMLogicPage/images/icons/${this.icon}.png`
     },
   },
   methods: {

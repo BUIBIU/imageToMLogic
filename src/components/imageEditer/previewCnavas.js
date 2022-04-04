@@ -49,14 +49,14 @@ class MLogic {
 export default class PreviewCanvas {
     screenData = {
         normal: {
-            url: '/images/blocks/logic/logic-display.png',
+            url: '/imageToMLogicPage/images/blocks/logic/logic-display.png',
             image: null,
             resolution: 80,
             border: 8,
             size: 96
         },
         large: {
-            url: '/images/blocks/logic/large-logic-display.png',
+            url: '/imageToMLogicPage/images/blocks/logic/large-logic-display.png',
             image: null,
             resolution: 176,
             border: 8,
@@ -110,7 +110,7 @@ export default class PreviewCanvas {
             requestList.push(request)
         }
 
-        let request = getImage("/images/blocks/environment/crater-stone5.png").then(res => {
+        let request = getImage("/imageToMLogicPage/images/blocks/environment/crater-stone5.png").then(res => {
             this.baseTexture = res
         }).catch(() => {
         })

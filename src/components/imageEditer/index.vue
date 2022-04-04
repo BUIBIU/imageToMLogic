@@ -41,13 +41,13 @@
         <span>
           <mButton
             :checked="option.resolution === 176"
-            url="/images/blocks/logic/large-logic-display.png"
+            url="/imageToMLogicPage/images/blocks/logic/large-logic-display.png"
             text="176"
             @click="setScreenType('large')"
           />
           <mButton
             :checked="option.resolution === 80"
-            url="/images/blocks/logic/logic-display.png"
+            url="/imageToMLogicPage/images/blocks/logic/logic-display.png"
             text="80"
             @click="setScreenType('normal')"
           />
