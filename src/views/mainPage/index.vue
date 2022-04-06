@@ -19,7 +19,7 @@ export default {
 <style lang="scss" scoped>
 @font-face {
   font-family: 'mindustry-font';
-  src: url('/font/font.woff');
+  src: url('/imageToMLogicPage/font/font.woff');
 }
 .background {
   height: 100%;
