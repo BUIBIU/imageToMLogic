@@ -31,6 +31,10 @@ export default {
     background-color: transparent;
     border: none;
     caret-color: rgb(160, 138, 138);
+    font-family: 'mindustry-font';
+    outline: none;
+    color: white;
+    font-size: 16px;
   }
   &:after {
     content: '';
