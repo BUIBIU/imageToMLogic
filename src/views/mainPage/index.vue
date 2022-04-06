@@ -37,6 +37,7 @@ export default {
   color: white;
   background-color: rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
+  font-size: 16px;
 }
 </style>
 <style lang="scss">
