@@ -1,4 +1,5 @@
 <template>
+  <!-- vue页面入口 -->
   <div id="app">
     <router-view />
   </div>

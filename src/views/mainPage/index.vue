@@ -7,8 +7,10 @@
 </template>
 
 <script>
+//引入图像处理器组件
 import imageEditer from '@/components/imageEditer'
 export default {
+  //注册组件
   components: {
     imageEditer,
   },
