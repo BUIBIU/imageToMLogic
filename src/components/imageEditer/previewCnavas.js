@@ -1,14 +1,25 @@
+//工具类 用于将图像转处理器代码自动整理分组。
 class MLogic {
+    //芯片数组
     chips = []
+    //单个芯片缓存
     chip = []
+    //单个绘图块缓存（设置颜色 + 绘制方块*N + 输出至屏幕）
     block = []
+    //一个芯片的最大代码行数
     chipMaxLength = 1000
+    //一个绘图块的最大代码行数
     blockMaxLength = 20
+    //当前绘制的颜色
     color = null
+    //处理器名称
     screenName = ''
+
+    //类构造函数
     constructor(screenName) {
         this.screenName = screenName
     }
+    //新增一个色块
     addColorBlock(block) {
         let { x, y, width, height } = block
         this.block.push(`draw rect ${x} ${y} ${width} ${height} 0 0`)
@@ -16,12 +27,14 @@ class MLogic {
             this.encapsulationBlock()
         }
     }
+    //改变当前绘图颜色
     setColor(color) {
         if (this.block.length > 0) {
             this.encapsulationBlock()
         }
         this.color = color
     }
+    //封装一个绘图块，将绘图块存入芯片缓存
     encapsulationBlock() {
         let block = this.block
         let { r, g, b, a } = this.color
@@ -33,10 +46,12 @@ class MLogic {
         this.chip.push(...block)
         this.block = []
     }
+    //封装芯片存入芯片数组
     encapsulationChip() {
         this.chips.push(this.chip.join('\n'))
         this.chip = []
     }
+    //获取芯片数据
     getChips() {
         if (this.block.length > 0) {
             this.encapsulationBlock()
@@ -46,7 +61,9 @@ class MLogic {
     }
 }
 
+//图像处理类
 export default class PreviewCanvas {
+    //屏幕相关数据
     screenData = {
         normal: {
             url: '/images/blocks/logic/logic-display.png',
@@ -63,20 +80,30 @@ export default class PreviewCanvas {
             size: 192
         }
     }
-    baseTexture = null
+    //屏幕相关设置
     screenOption = {
+        //屏幕数量
         screenCount: {
             x: 1,
             y: 1,
         },
+        //当前选择的屏幕数据
         screenData: null,
+        //是否忽略边框
         ignoreBorder: true,
+        //压缩等级
         compress: 5,
+        //屏幕名称
         screenName: ''
     }
+    //输出的图像img标签
     outputImage = null
+    //输入的图像base64数据
     inputImage = null
+    //切片图像的数据
     processCanvasList = []
+
+    //构造函数
     constructor(image) {
         this.initImageFile().then(() => {
             this.outputImage = image
@@ -84,6 +111,7 @@ export default class PreviewCanvas {
             this.refreshOutputImage()
         })
     }
+    //初始化图片处理器，预加载图片资源
     initImageFile() {
         function getImage(url) {
             return new Promise((resolve, reject) => {
@@ -109,12 +137,6 @@ export default class PreviewCanvas {
             })
             requestList.push(request)
         }
-
-        let request = getImage("/images/blocks/environment/crater-stone5.png").then(res => {
-            this.baseTexture = res
-        }).catch(() => {
-        })
-        requestList.push(request)
         return new Promise((resolve, reject) => {
             Promise.all(requestList).then(res => {
                 resolve()
@@ -123,21 +145,25 @@ export default class PreviewCanvas {
             })
         })
     }
+    //设置当前的屏幕类型）
     setScreenType(name) {
         this.screenOption.screenData = this.screenData[name]
         this.refreshOutputImage()
     }
+    //设置当前的屏幕数量
     setScreenCount(x, y) {
         this.screenOption.screenCount = {
             x: x,
             y: y
         }
-        // this.refreshOutputImage()
+        this.refreshOutputImage()
     }
+    //设置是否忽略边框
     setSreenIgnoreBorder(ignoreBorder) {
         this.screenOption.ignoreBorder = ignoreBorder
         // this.refreshOutputImage()
     }
+    //绘制处理后的图像
     drawImage() {
         let canvas = document.createElement('canvas')
         this.changeCanvasSize(canvas)
@@ -148,6 +174,7 @@ export default class PreviewCanvas {
         this.drawScreens(canvas)
         return canvas
     }
+    //设置画板尺寸
     changeCanvasSize(canvas) {
         let { size } = this.screenOption.screenData
         let { x, y } = this.screenOption.screenCount
@@ -156,12 +183,13 @@ export default class PreviewCanvas {
         canvas.width = imageWidth
         canvas.height = imageHeight
     }
+    //绘制每个屏幕切片
     drawScreens(canvas) {
         let ctx = canvas.getContext('2d')
         let screenX = this.screenOption.screenCount.x
         let screenY = this.screenOption.screenCount.y
         let { size, image, border, resolution } = this.screenOption.screenData
-
+        //绘制屏幕边框
         for (let y = 0; y < screenY; y++) {
             for (let x = 0; x < screenX; x++) {
                 let posX = x * size
@@ -169,6 +197,7 @@ export default class PreviewCanvas {
                 ctx.drawImage(image, posX, posY)
             }
         }
+        //绘制切片后的各个图像
         if (this.inputImage) {
             let imageWidth = this.inputImage.width
             let imageHeight = this.inputImage.height
@@ -208,14 +237,17 @@ export default class PreviewCanvas {
             }
         }
     }
+    //输出处理后的预览图片地址
     output(canvas) {
         this.outputImage.src = canvas.toDataURL("image/png");
     }
+    //刷新输出的预览图片
     refreshOutputImage() {
         this.processCanvasList = []
         let canvas = this.drawImage()
         this.output(canvas)
     }
+    //设置输入的图片
     setImage(base64) {
         let img = new Image()
         let vue = this
@@ -225,6 +257,7 @@ export default class PreviewCanvas {
         })
         img.src = base64
     }
+    //返回当前真实裁剪的长宽比（忽略边框时，裁剪的区域的长宽比不等于屏幕数量的长宽比）
     getAspect() {
         let { x, y } = this.screenOption.screenCount
         if (this.screenOption.ignoreBorder) {
@@ -236,13 +269,16 @@ export default class PreviewCanvas {
             return [x, y]
         }
     }
+    //设置压缩强度
     setCompress(n) {
         this.screenOption.compress = n
         this.refreshOutputImage()
     }
+    //设置屏幕的名称
     setScreenName(screenName) {
         this.screenOption.screenName = screenName
     }
+    //压缩图像
     compressImage(canvas) {
         let ctx = canvas.getContext('2d')
         let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
@@ -261,6 +297,7 @@ export default class PreviewCanvas {
         }
         ctx.putImageData(imageData, 0, 0)
     }
+    //图片转为处理器代码
     imageToMLogic() {
         let mlogicList = []
         this.processCanvasList.forEach(canvas => {
@@ -271,6 +308,7 @@ export default class PreviewCanvas {
         });
         return mlogicList
     }
+    //将图片分解为色块
     getColorBlocks(canvas) {
         let colorBlocks = []
         let ctx = canvas.getContext('2d')
@@ -293,6 +331,7 @@ export default class PreviewCanvas {
         }
         return colorBlocks
     }
+    //将色块按颜色进行分类集合
     getColorMap(colorBlocks) {
         let map = new Map()
         colorBlocks.forEach(block => {
@@ -306,6 +345,7 @@ export default class PreviewCanvas {
         })
         return map
     }
+    //获取某个像素的颜色
     getpixel(image, x, y) {
         let index = (image.width * y + x) * 4;
         let r = image.data[index++];
@@ -319,6 +359,7 @@ export default class PreviewCanvas {
             a: a
         };
     }
+    //尝试获取当前坐标下最大的色块
     getMaxSizeBlock(image, x, y, statusMap) {
         let originColor = this.getpixel(image, x, y);
         if (originColor.a == 0) {
@@ -383,6 +424,7 @@ export default class PreviewCanvas {
             }
         };
     }
+    //颜色是否相等
     isSameColor(color1, color2) {
         return (
             color1.r == color2.r &&
@@ -391,7 +433,9 @@ export default class PreviewCanvas {
             color1.a == color2.a
         );
     }
+    //将色块信息转为处理器代码
     getChips(colorMap) {
+        //创建代码构建器
         let mLogic = new MLogic(this.screenOption.screenName)
         for (let item of colorMap) {
             let blockList = item[1]
