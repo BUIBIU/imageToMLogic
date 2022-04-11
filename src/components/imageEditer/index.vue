@@ -116,13 +116,8 @@
         </span>
       </div>
       <!-- 开始转换按钮 -->
-      <div class="form-item">
-        <mButton
-          v-if="isChanged"
-          icon="play-2"
-          text="开始转换"
-          @click="getMlog"
-        />
+      <div class="form-item" v-if="isChanged && !loading">
+        <mButton icon="play-2" text="开始转换" @click="getMlog" />
       </div>
     </div>
     <!-- 隐藏的用于代码复制的文本域 -->
