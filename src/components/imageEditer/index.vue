@@ -116,7 +116,7 @@
         </span>
       </div>
       <!-- 开始转换按钮 -->
-      <div class="form-item">
+      <div class="form-item" v-if="isChanged && !loading">
         <mButton icon="play-2" text="开始转换" @click="getMlog" />
       </div>
     </div>
@@ -163,6 +163,7 @@ import mInput from '@/components/ui/input'
 import mNumberCounter from '@/components/ui/numberCounter'
 //引入图像处理类
 import PreviewCnavas from './previewCnavas.js'
+//引入底部声明
 export default {
   //组件注册
   components: {
@@ -205,6 +206,8 @@ export default {
       code: '',
       //输出的处理器数据
       screenMlog: [],
+      //是否发生更改
+      isChanged: false,
     }
   },
   methods: {
@@ -225,6 +228,7 @@ export default {
     onImageLoad(e) {
       if (e === 'success') {
         this.loading = false
+        this.imageChanged()
       }
     },
     //屏幕数量改变
@@ -238,6 +242,7 @@ export default {
         //裁剪组件更新裁剪框长宽比
         this.$refs.cropper.goAutoCrop()
       })
+      this.imageChanged()
     },
     //模拟点击上传input
     getFile() {
@@ -255,11 +260,13 @@ export default {
           this.previewCnavas.setScreenType('large')
           break
       }
+      this.imageChanged()
     },
     //设置压缩比
     setCompress(n) {
       this.option.compress = n
       this.previewCnavas.setCompress(n)
+      this.imageChanged()
     },
     //裁剪组件裁剪框改变时触发
     cropperChanged() {
@@ -272,6 +279,7 @@ export default {
           this.$refs.cropper.getCropData(data => {
             this.previewCnavas.setImage(data)
           })
+          this.imageChanged()
         }, 100)
       }
     },
@@ -282,6 +290,7 @@ export default {
       this.$nextTick(() => {
         this.screenSizeChange()
       })
+      this.imageChanged()
     },
     //获取图像处理后的逻辑代码
     getMlog() {
@@ -295,12 +304,13 @@ export default {
           }
         }
       })
-
       this.screenMlog = screenMlog
+      this.isChanged = false
     },
     //改变屏幕名称时调用
     changeScreenName() {
       this.previewCnavas.setScreenName(this.option.screenName)
+      this.imageChanged()
     },
     //将代码复制进剪贴板
     copyCode(chip) {
@@ -311,6 +321,10 @@ export default {
         this.$refs.codeTextarea.select()
         document.execCommand('copy')
       })
+    },
+    imageChanged() {
+      this.screenMlog = []
+      this.isChanged = true
     },
   },
   //页面加载完毕调用

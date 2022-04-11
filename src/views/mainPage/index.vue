@@ -2,6 +2,7 @@
   <div class="background">
     <div class="mainPage">
       <imageEditer />
+      <bottomBar />
     </div>
   </div>
 </template>
@@ -9,10 +10,12 @@
 <script>
 //引入图像处理器组件
 import imageEditer from '@/components/imageEditer'
+import bottomBar from '@/components/bottomBar'
 export default {
   //注册组件
   components: {
     imageEditer,
+    bottomBar,
   },
   mounted() {},
 }
