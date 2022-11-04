@@ -48,13 +48,13 @@
         <span>
           <mButton
             :checked="option.resolution === 176"
-            url="/images/blocks/logic/large-logic-display.png"
+            :url="largeLogicDisplayUrl"
             text="176"
             @click="setScreenType('large')"
           />
           <mButton
             :checked="option.resolution === 80"
-            url="/images/blocks/logic/logic-display.png"
+            :url="logicDisplayUrl"
             text="80"
             @click="setScreenType('normal')"
           />
@@ -208,6 +208,8 @@ export default {
       screenMlog: [],
       //是否发生更改
       isChanged: false,
+      largeLogicDisplayUrl: require('@/assets/images/blocks/logic/large-logic-display.png'),
+      logicDisplayUrl: require('@/assets/images/blocks/logic/logic-display.png'),
     }
   },
   methods: {

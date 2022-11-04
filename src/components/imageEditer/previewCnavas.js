@@ -66,14 +66,14 @@ export default class PreviewCanvas {
     //屏幕相关数据
     screenData = {
         normal: {
-            url: '/images/blocks/logic/logic-display.png',
+            url: require('@/assets/images/blocks/logic/logic-display.png'),
             image: null,
             resolution: 80,
             border: 8,
             size: 96
         },
         large: {
-            url: '/images/blocks/logic/large-logic-display.png',
+            url: require('@/assets/images/blocks/logic/large-logic-display.png'),
             image: null,
             resolution: 176,
             border: 8,

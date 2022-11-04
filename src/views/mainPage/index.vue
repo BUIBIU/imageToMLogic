@@ -24,12 +24,12 @@ export default {
 <style lang="scss" scoped>
 @font-face {
   font-family: 'mindustry-font';
-  src: url('/font/font.woff');
+  src: url('../../assets/font/font.woff');
 }
 .background {
   height: 100%;
   width: 100%;
-  background-image: url('/images/blocks/environment/background.png');
+  background-image: url('../../assets/images/blocks/environment/background.png');
   overflow: auto;
 }
 .mainPage {

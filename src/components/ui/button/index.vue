@@ -40,7 +40,7 @@ export default {
   },
   computed: {
     iconUrl() {
-      return `/images/icons/${this.icon}.png`
+      return require(`@/assets/images/icons/${this.icon}.png`)
     },
   },
   methods: {

@@ -4,8 +4,8 @@
       <div class="section">
         <div class="subtitle">开发者</div>
         <div class="avatar-list">
-          <avatarAndName url="/images/avatars/BUI.png" name="BUI" />
-          <avatarAndName url="/images/avatars/wangchai.bmp" name="王柴" />
+          <avatarAndName :url="avatar1" name="BUI" />
+          <avatarAndName :url="avatar2" name="王柴" />
         </div>
       </div>
       <div class="section" style="border-top: 5px rgb(69, 69, 69) solid">
@@ -14,7 +14,7 @@
     </div>
     <div class="section" style="border-left: 5px rgb(69, 69, 69) solid">
       <div class="subtitle">Mindustry 逻辑交流群</div>
-      <img class="qq-group" src="/images/other/qq_group.png" alt="" />
+      <img class="qq-group" :src="qqGroup" alt="" />
     </div>
   </div>
 </template>
@@ -24,6 +24,13 @@ import avatarAndName from './avatarAndName'
 export default {
   components: {
     avatarAndName,
+  },
+  data() {
+    return {
+      avatar1: require('@/assets/images/avatars/BUI.png'),
+      avatar2: require('@/assets/images/avatars/wangchai.png'),
+      qqGroup: require('@/assets/images/other/qq_group.png'),
+    }
   },
 }
 </script>
