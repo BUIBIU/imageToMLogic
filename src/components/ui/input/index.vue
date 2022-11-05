@@ -1,6 +1,10 @@
 <template>
   <div class="m-input">
-    <input type="text" :value="value" @input="$emit('input', value)" />
+    <input
+      type="text"
+      :value="value"
+      @input="$emit('input', $event.target.value)"
+    />
   </div>
 </template>
 

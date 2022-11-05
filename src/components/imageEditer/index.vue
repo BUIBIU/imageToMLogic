@@ -26,7 +26,8 @@
       </div>
       <div class="view">
         <!-- 预览图片 -->
-        <img ref="previewImage" />
+        <!-- <img ref="previewImage" /> -->
+        <canvas ref="previewImage"></canvas>
       </div>
     </div>
     <div style="margin-top: 20px">
@@ -67,14 +68,14 @@
           <mNumberCounter
             v-model="option.screenX"
             :min="1"
-            :max="3"
+            :max="4"
             @change="screenSizeChange"
           />
           <span style="margin: 0 5px">X</span>
           <mNumberCounter
             v-model="option.screenY"
             :min="1"
-            :max="3"
+            :max="4"
             @change="screenSizeChange"
           />
         </span>
@@ -115,9 +116,50 @@
           ><mInput v-model="option.screenName" @input="changeScreenName" />
         </span>
       </div>
+      <!-- 蓝图名称 -->
+      <div class="form-item">
+        <span class="form-item-label">蓝图名称</span>
+        <span><mInput v-model="option.mschName" /> </span>
+      </div>
+      <!-- 蓝图描述 -->
+      <div class="form-item">
+        <span class="form-item-label">蓝图描述</span>
+        <span><mInput v-model="option.mschDescription" /> </span>
+      </div>
+      <!-- 导出形式 -->
+      <div class="form-item">
+        <span class="form-item-label">导出形式</span>
+        <span>
+          <mButton
+            :checked="option.exportType === 1"
+            text="剪切板"
+            @click="changeExportType(1)"
+          />
+          <mButton
+            :checked="option.exportType === 2"
+            text="文件"
+            @click="changeExportType(2)"
+          />
+        </span>
+      </div>
       <!-- 开始转换按钮 -->
       <div class="form-item" v-if="isChanged && !loading">
         <mButton icon="play-2" text="开始转换" @click="getMlog" />
+      </div>
+      <div class="error-message" v-if="exportError">
+        导出失败，请尝试提高压缩强度或减少屏幕数量
+      </div>
+      <div
+        class="success-message"
+        v-if="exportSuccess && option.exportType == 1"
+      >
+        导出成功，蓝图已复制进剪切板
+      </div>
+      <div
+        class="success-message"
+        v-if="exportSuccess && option.exportType == 2"
+      >
+        导出成功，蓝图文件开始下载
       </div>
     </div>
     <!-- 隐藏的用于代码复制的文本域 -->
@@ -163,7 +205,7 @@ import mInput from '@/components/ui/input'
 import mNumberCounter from '@/components/ui/numberCounter'
 //引入图像处理类
 import PreviewCnavas from './previewCnavas.js'
-//引入底部声明
+import CodeToMsch from './CodeToMsch'
 export default {
   //组件注册
   components: {
@@ -196,6 +238,12 @@ export default {
         aspect: [1, 1],
         //是否忽略边框
         ignoreBorder: true,
+        //蓝图名称
+        mschName: 'pic',
+        //蓝图描述
+        mschDescription: '',
+        //导出形式
+        exportType: 1,
       },
       //图像处理类实例
       previewCnavas: null,
@@ -210,6 +258,8 @@ export default {
       isChanged: false,
       largeLogicDisplayUrl: require('@/assets/images/blocks/logic/large-logic-display.png'),
       logicDisplayUrl: require('@/assets/images/blocks/logic/logic-display.png'),
+      exportError: false,
+      exportSuccess: false,
     }
   },
   methods: {
@@ -296,17 +346,46 @@ export default {
     },
     //获取图像处理后的逻辑代码
     getMlog() {
-      let screenMlog = this.previewCnavas.imageToMLogic()
-      screenMlog.forEach(chips => {
-        for (let i = 0; i < chips.length; i++) {
-          let chip = chips[i]
-          chips[i] = {
-            code: chip,
-            copyed: false,
-          }
+      const screenMlog = this.previewCnavas.imageToMLogic()
+      const screenData = this.previewCnavas.screenOption.screenData
+      const codeToMsch = new CodeToMsch(
+        screenMlog,
+        this.option.screenName,
+        screenData.type,
+        this.option.mschName,
+        this.option.mschDescription,
+        this.option.screenX,
+        this.option.screenY,
+      )
+      const out = codeToMsch.getMsch()
+      if (out) {
+        if (this.option.exportType == 1) {
+          const base64 = btoa(
+            out.reduce((data, byte) => data + String.fromCharCode(byte), ''),
+          )
+          this.code = base64
+          this.$nextTick(() => {
+            this.$refs.codeTextarea.select()
+            document.execCommand('copy')
+          })
+        } else {
+          const blob = new Blob([out])
+          // 创建隐藏的可下载链接
+          let eleLink = document.createElement('a')
+          eleLink.download = `${this.option.mschName}.msch`
+          eleLink.style.display = 'none'
+          // 字符内容转变成blob地址
+          eleLink.href = URL.createObjectURL(blob)
+          // 触发点击
+          document.body.appendChild(eleLink)
+          eleLink.click()
+          // 然后移除
+          document.body.removeChild(eleLink)
         }
-      })
-      this.screenMlog = screenMlog
+        this.exportSuccess = true
+      } else {
+        this.exportError = true
+      }
       this.isChanged = false
     },
     //改变屏幕名称时调用
@@ -327,6 +406,12 @@ export default {
     imageChanged() {
       this.screenMlog = []
       this.isChanged = true
+      this.exportError = false
+      this.exportSuccess = false
+    },
+    changeExportType(type) {
+      this.option.exportType = type
+      this.imageChanged()
     },
   },
   //页面加载完毕调用
@@ -379,7 +464,7 @@ export default {
     justify-content: center;
     position: relative;
     background-color: black;
-    img {
+    canvas {
       position: absolute;
       width: 100%;
       height: 100%;
@@ -445,5 +530,13 @@ export default {
       margin-bottom: 100px;
     }
   }
+}
+.error-message {
+  margin-top: 30px;
+  color: rgb(229, 84, 84);
+}
+.success-message {
+  margin-top: 30px;
+  color: rgb(255, 211, 127);
 }
 </style>
