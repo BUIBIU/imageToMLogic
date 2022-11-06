@@ -367,6 +367,7 @@ export default {
           this.$nextTick(() => {
             this.$refs.codeTextarea.select()
             document.execCommand('copy')
+            this.code = ''
           })
         } else {
           const blob = new Blob([out])
