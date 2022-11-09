@@ -101,7 +101,7 @@
       <!-- 忽略边框 -->
       <div class="form-item" v-if="option.screenX > 1 || option.screenY > 1">
         <span class="form-item-label">忽略边框</span>
-        <span>
+        <div class="button-grid">
           <mButton
             :checked="option.ignoreBorder === true"
             text="是"
@@ -112,7 +112,7 @@
             text="否"
             @click="changeIgnoreBorder(false)"
           />
-        </span>
+        </div>
       </div>
       <!-- 显示器名称 -->
       <div class="form-item">
