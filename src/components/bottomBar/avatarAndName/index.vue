@@ -1,6 +1,11 @@
 <template>
   <div class="avatar">
-    <img :src="url" />
+    <div class="size-contral">
+      <div class="square-box">
+        <img :src="url" />
+      </div>
+    </div>
+
     <div class="name">{{ name }}</div>
   </div>
 </template>
@@ -21,9 +26,22 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  .size-contral{
+    width: 100%;
+    max-width: 60px;
+  }
+  .square-box {
+    width: 100%;
+    height: 0;
+    padding-bottom: 100%;
+    position: relative;
+   
+  }
   img {
-    width: 60px;
-    height: 60px;
+    position: absolute;
+    width: 100%;
+    height: 100%;
     border-radius: 50% 50%;
     border: 2px rgb(255, 211, 127) solid;
   }

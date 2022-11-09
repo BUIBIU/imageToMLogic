@@ -109,9 +109,9 @@ export default {
       $borderWidth $borderCut2
     );
   }
-  & + & {
-    margin-left: 10px;
-  }
+  // & + & {
+  //   margin-left: 10px;
+  // }
   .m-button-flex {
     user-select: none;
     height: 100%;

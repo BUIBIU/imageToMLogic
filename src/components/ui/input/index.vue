@@ -32,6 +32,7 @@ export default {
   position: relative;
   padding: 0 10px;
   input {
+    width: 100%;
     background-color: transparent;
     border: none;
     caret-color: rgb(160, 138, 138);

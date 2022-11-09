@@ -45,8 +45,10 @@
     <div class="setting">
       <!-- 分辨率 -->
       <div class="form-item">
-        <span class="form-item-label">分辨率</span>
-        <span>
+        <div class="form-item-label">
+          <span>分辨率</span>
+        </div>
+        <div class="button-grid">
           <mButton
             :checked="option.resolution === 176"
             :url="largeLogicDisplayUrl"
@@ -59,31 +61,34 @@
             text="80"
             @click="setScreenType('normal')"
           />
-        </span>
+        </div>
       </div>
       <!-- 屏幕数量 -->
       <div class="form-item">
-        <span class="form-item-label">屏幕数量</span>
-        <span style="display: flex; align-items: center">
+        <div class="form-item-label">
+          <span>屏幕数量</span>
+        </div>
+        <div class="button-grid">
           <mNumberCounter
             v-model="option.screenX"
             :min="1"
             :max="4"
             @change="screenSizeChange"
           />
-          <span style="margin: 0 5px">X</span>
           <mNumberCounter
             v-model="option.screenY"
             :min="1"
             :max="4"
             @change="screenSizeChange"
           />
-        </span>
+        </div>
       </div>
       <!-- 压缩强度 -->
       <div class="form-item">
-        <span class="form-item-label">压缩强度</span>
-        <span>
+        <div class="form-item-label">
+          <span>压缩强度</span>
+        </div>
+        <div class="button-grid">
           <mButton
             v-for="(n, index) in 8"
             :key="index"
@@ -91,7 +96,7 @@
             :text="index"
             @click="setCompress(index)"
           />
-        </span>
+        </div>
       </div>
       <!-- 忽略边框 -->
       <div class="form-item" v-if="option.screenX > 1 || option.screenY > 1">
@@ -129,7 +134,7 @@
       <!-- 导出形式 -->
       <div class="form-item">
         <span class="form-item-label">导出形式</span>
-        <span>
+        <div class="button-grid">
           <mButton
             :checked="option.exportType === 1"
             text="剪切板"
@@ -140,7 +145,7 @@
             text="文件"
             @click="changeExportType(2)"
           />
-        </span>
+        </div>
       </div>
       <!-- 开始转换按钮 -->
       <div class="form-item" v-if="isChanged && !loading">
@@ -435,8 +440,10 @@ export default {
 .image-editer {
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   .cropper {
     flex: 1;
+    min-width: 300px;
     height: 400px;
     position: relative;
     .editer {
@@ -460,6 +467,8 @@ export default {
   }
   .view {
     flex: 1;
+    min-width: 300px;
+    height: 400px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -484,13 +493,16 @@ export default {
 .form-item {
   display: flex;
   flex-direction: row;
-  align-items: center;
-  height: 54px;
+  min-height: 54px;
   & + & {
     margin-top: 10px;
   }
   .form-item-label {
     width: 90px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
   }
 }
 .code-textarea {
@@ -539,5 +551,11 @@ export default {
 .success-message {
   margin-top: 30px;
   color: rgb(255, 211, 127);
+}
+.button-grid{
+  display: flex;
+  flex-wrap: wrap;
+  grid-column-gap: 10px;
+  grid-row-gap: 10px;
 }
 </style>

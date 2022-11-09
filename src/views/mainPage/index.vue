@@ -33,7 +33,8 @@ export default {
   overflow: auto;
 }
 .mainPage {
-  width: 1000px;
+  width: 100%;
+  max-width: 1000px;
   padding: 10px;
   padding-top: 50px;
   min-height: 100%;
