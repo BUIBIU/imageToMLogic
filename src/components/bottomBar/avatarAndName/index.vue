@@ -44,6 +44,7 @@ export default {
     height: 100%;
     border-radius: 50% 50%;
     border: 2px rgb(255, 211, 127) solid;
+    object-fit: cover;
   }
   .name {
     margin-top: 10px;
