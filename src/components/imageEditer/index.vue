@@ -598,6 +598,7 @@ export default {
 }
 .mask.show {
   opacity: 1;
+  pointer-events: unset;
 }
 .exporting-state {
   color: rgb(255, 211, 127);
