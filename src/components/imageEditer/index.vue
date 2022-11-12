@@ -594,6 +594,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 100;
 }
 .mask.show {
   opacity: 1;
