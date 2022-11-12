@@ -39,6 +39,8 @@ export default class CodeToMsch {
   mschName = ''
   mschDescription = ''
   screenSize = 0
+  totalBlocks = 0
+  onProgress = () => {}
   constructor(
     screenCode,
     screenName,
@@ -83,6 +85,7 @@ export default class CodeToMsch {
         })
       }
     }
+    this.totalBlocks = this.getBlockLength()
     this.box = {
       minX: 0,
       minY: -1,
@@ -211,13 +214,18 @@ export default class CodeToMsch {
       this.box.maxY = y
     }
   }
-  haveCode() {
+  getBlockLength() {
+    let sum = 0
     for (let screen of this.screenList) {
       const { codes } = screen
-      if (codes.length > 0) {
-        return true
-      }
+      sum += codes.length
     }
-    return false
+    return sum
+  }
+  haveCode() {
+    const total = this.getBlockLength()
+    const num = Number(((1 - total / this.totalBlocks) * 100).toFixed(2))
+    this.onProgress(num)
+    return total > 0
   }
 }

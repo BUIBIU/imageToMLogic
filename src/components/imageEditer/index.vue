@@ -196,6 +196,11 @@
         </div>
       </div>
     </div>
+    <div class="mask" :class="{ show: exporting }">
+      <div class="exporting-state">
+        {{ exportingState }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -210,7 +215,8 @@ import mInput from '@/components/ui/input'
 import mNumberCounter from '@/components/ui/numberCounter'
 //引入图像处理类
 import PreviewCnavas from './previewCnavas.js'
-import CodeToMsch from './CodeToMsch'
+// import CodeToMsch from './CodeToMsch'
+import WorkerController from './WorkerController.js'
 export default {
   //组件注册
   components: {
@@ -265,6 +271,8 @@ export default {
       logicDisplayUrl: require('@/assets/images/blocks/logic/logic-display.png'),
       exportError: false,
       exportSuccess: false,
+      exporting: false,
+      exportingState: '',
     }
   },
   methods: {
@@ -351,47 +359,27 @@ export default {
     },
     //获取图像处理后的逻辑代码
     getMlog() {
-      const screenMlog = this.previewCnavas.imageToMLogic()
-      const screenData = this.previewCnavas.screenOption.screenData
-      const codeToMsch = new CodeToMsch(
-        screenMlog,
-        this.option.screenName,
-        screenData.type,
-        this.option.mschName,
-        this.option.mschDescription,
-        this.option.screenX,
-        this.option.screenY,
+      const imageDatas = this.previewCnavas.getImageData()
+      const workerController = new WorkerController(
+        this.onStart,
+        this.onPercentage,
+        this.onEnd,
+        this.onError,
       )
-      const out = codeToMsch.getMsch()
-      if (out) {
-        if (this.option.exportType == 1) {
-          const base64 = btoa(
-            out.reduce((data, byte) => data + String.fromCharCode(byte), ''),
-          )
-          this.code = base64
-          this.$nextTick(() => {
-            this.$refs.codeTextarea.select()
-            document.execCommand('copy')
-            this.code = ''
-          })
-        } else {
-          const blob = new Blob([out])
-          // 创建隐藏的可下载链接
-          let eleLink = document.createElement('a')
-          eleLink.download = `${this.option.mschName}.msch`
-          eleLink.style.display = 'none'
-          // 字符内容转变成blob地址
-          eleLink.href = URL.createObjectURL(blob)
-          // 触发点击
-          document.body.appendChild(eleLink)
-          eleLink.click()
-          // 然后移除
-          document.body.removeChild(eleLink)
-        }
-        this.exportSuccess = true
-      } else {
-        this.exportError = true
-      }
+      workerController.run({
+        imageDatas,
+        screenName: this.option.screenName,
+        screenType: this.previewCnavas.screenOption.screenData.type,
+        mschName: this.option.mschName,
+        mschDescription: this.option.mschDescription,
+        screenX: this.option.screenX,
+        screenY: this.option.screenY,
+        exportType: this.option.exportType,
+      })
+      this.exportingState = ''
+      this.exportError = false
+      this.exportSuccess = false
+      this.exporting = true
       this.isChanged = false
     },
     //改变屏幕名称时调用
@@ -410,7 +398,6 @@ export default {
       })
     },
     imageChanged() {
-      this.screenMlog = []
       this.isChanged = true
       this.exportError = false
       this.exportSuccess = false
@@ -418,6 +405,42 @@ export default {
     changeExportType(type) {
       this.option.exportType = type
       this.imageChanged()
+    },
+    onStart() {
+      this.exportingState = '转换线程启动'
+    },
+    onPercentage(message) {
+      this.exportingState = message
+    },
+    onEnd(data) {
+      this.exporting = false
+      this.exportSuccess = true
+      if (this.option.exportType == 1) {
+        this.code = data
+        this.$nextTick(() => {
+          this.$refs.codeTextarea.select()
+          document.execCommand('copy')
+          this.code = ''
+        })
+      } else {
+        const blob = new Blob([data])
+        // 创建隐藏的可下载链接
+        let eleLink = document.createElement('a')
+        eleLink.download = `${this.option.mschName}.msch`
+        eleLink.style.display = 'none'
+        // 字符内容转变成blob地址
+        eleLink.href = URL.createObjectURL(blob)
+        // 触发点击
+        document.body.appendChild(eleLink)
+        eleLink.click()
+        // 然后移除
+        document.body.removeChild(eleLink)
+      }
+      this.exportSuccess = true
+    },
+    onError() {
+      this.exporting = false
+      this.exportError = true
     },
   },
   //页面加载完毕调用
@@ -552,10 +575,30 @@ export default {
   margin-top: 30px;
   color: rgb(255, 211, 127);
 }
-.button-grid{
+.button-grid {
   display: flex;
   flex-wrap: wrap;
   grid-column-gap: 10px;
   grid-row-gap: 10px;
+}
+.mask {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-color: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: 0.3s linear;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mask.show {
+  opacity: 1;
+}
+.exporting-state {
+  color: rgb(255, 211, 127);
 }
 </style>
