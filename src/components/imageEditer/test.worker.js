@@ -39,7 +39,7 @@ onmessage = function (event) {
   codeToMsch.onProgress = progress => {
     postMessage({
       state: 'percentage',
-      data: `正在生成蓝图 ${progress}%`,
+      data: progress,
     })
   }
   const out = codeToMsch.getMsch()

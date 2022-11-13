@@ -119,7 +119,7 @@ export default class CodeToMsch {
       const screenBlock = new Block(this.screenType, pos, 0, null)
       msch.blocks.push(screenBlock)
     })
-    this.logicBlockList.forEach(logic => {
+    this.logicBlockList.forEach((logic,index) => {
       const { x, y } = logic.pos
       const pos = CodeToMsch.fixPos(minX, minY, maxX, maxY, x, y)
       const logicBlock = new LogicBlock('micro-processor', pos, 0, null)
@@ -131,6 +131,9 @@ export default class CodeToMsch {
         y: targetScreen.position.y - pos.y,
       })
       msch.blocks.push(logicBlock)
+      const num = Number(((index / this.totalBlocks) * 100).toFixed(2))
+      const message = `正在生成蓝图 ${num}%`
+      this.onProgress(message)
     })
     const out = msch.write()
 
@@ -225,7 +228,8 @@ export default class CodeToMsch {
   haveCode() {
     const total = this.getBlockLength()
     const num = Number(((1 - total / this.totalBlocks) * 100).toFixed(2))
-    this.onProgress(num)
+    const message = `正在规划蓝图排布 ${num}%`
+    this.onProgress(message)
     return total > 0
   }
 }

@@ -158,7 +158,12 @@
         class="success-message"
         v-if="exportSuccess && option.exportType == 1"
       >
-        导出成功，蓝图已复制进剪切板
+        <div>
+          导出成功，蓝图已复制进剪切板
+        </div>
+        <div style="margin-top:20px">
+          若复制失败，请使用文件导出
+        </div>
       </div>
       <div
         class="success-message"
@@ -198,7 +203,9 @@
     </div>
     <div class="mask" :class="{ show: exporting }">
       <div class="exporting-state">
-        {{ exportingState }}
+        <img class="icon" src="@/assets/images/icons/settings.png" />
+        <div style="margin: 0 10px">{{ exportingState }}</div>
+        <img class="icon" src="@/assets/images/icons/settings.png" />
       </div>
     </div>
   </div>
@@ -376,7 +383,7 @@ export default {
         screenY: this.option.screenY,
         exportType: this.option.exportType,
       })
-      this.exportingState = ''
+      this.exportingState = '开始转换'
       this.exportError = false
       this.exportSuccess = false
       this.exporting = true
@@ -602,5 +609,20 @@ export default {
 }
 .exporting-state {
   color: rgb(255, 211, 127);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .icon {
+    width: 20px;
+    animation: 1s icon-turn infinite linear;
+  }
+}
+@keyframes icon-turn {
+  0% {
+    transform: rotateZ(0deg);
+  }
+  100% {
+    transform: rotateZ(360deg);
+  }
 }
 </style>
