@@ -28,7 +28,6 @@ export default {
 
 <style lang="scss" scoped>
 .m-input {
-  margin-bottom: 10px;
   position: relative;
   padding: 0 10px;
   input {

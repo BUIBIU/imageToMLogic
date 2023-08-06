@@ -32,7 +32,7 @@
     </div>
     <div style="margin-top: 20px">
       <!-- 点击选择图片按钮 -->
-      <mButton icon="load" text="选择图片" @click="getFile" />
+      <mButton icon="load" text="选择图片" @click="getFile" style="margin-right: 10px;" />
       <!-- 被隐藏的input标签 -->
       <input
         type="file"
@@ -41,6 +41,7 @@
         @change="loadFile"
         ref="fileInput"
       />
+      <mButton icon="planet" text="使用教程" @click="jumpToVideo" />
     </div>
     <div class="setting">
       <!-- 分辨率 -->
@@ -116,20 +117,19 @@
       </div>
       <!-- 显示器名称 -->
       <div class="form-item">
-        <span class="form-item-label">显示器</span>
-        <span
-          ><mInput v-model="option.screenName" @input="changeScreenName" />
-        </span>
+        <div class="form-item-label">显示器</div>
+        <div class="form-item-input"><mInput v-model="option.screenName" @input="changeScreenName" />
+        </div>
       </div>
       <!-- 蓝图名称 -->
       <div class="form-item">
-        <span class="form-item-label">蓝图名称</span>
-        <span><mInput v-model="option.mschName" /> </span>
+        <div class="form-item-label">蓝图名称</div>
+        <div class="form-item-input"><mInput v-model="option.mschName" /> </div>
       </div>
       <!-- 蓝图描述 -->
       <div class="form-item">
-        <span class="form-item-label">蓝图描述</span>
-        <span><mInput v-model="option.mschDescription" /> </span>
+        <div class="form-item-label">蓝图描述</div>
+        <div class="form-item-input"><mInput v-model="option.mschDescription" /> </div>
       </div>
       <!-- 导出形式 -->
       <div class="form-item">
@@ -158,12 +158,8 @@
         class="success-message"
         v-if="exportSuccess && option.exportType == 1"
       >
-        <div>
-          导出成功，蓝图已复制进剪切板
-        </div>
-        <div style="margin-top:20px">
-          若复制失败，请使用文件导出
-        </div>
+        <div>导出成功，蓝图已复制进剪切板</div>
+        <div style="margin-top: 20px">若复制失败，请使用文件导出</div>
       </div>
       <div
         class="success-message"
@@ -449,6 +445,9 @@ export default {
       this.exporting = false
       this.exportError = true
     },
+    jumpToVideo() {
+      window.open('https://www.bilibili.com/video/BV1TD4y1t7DN')
+    },
   },
   //页面加载完毕调用
   mounted() {
@@ -533,6 +532,10 @@ export default {
     display: flex;
     align-items: center;
     flex-shrink: 0;
+  }
+  .form-item-input{
+    display: flex;
+    align-items: center;
   }
 }
 .code-textarea {
