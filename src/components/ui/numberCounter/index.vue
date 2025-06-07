@@ -28,6 +28,18 @@ export default {
       type: [Number, undefined],
     },
   },
+  watch: {
+    max(value) {
+      if (this.value > value) {
+        this.$emit('change', value)
+      }
+    },
+    min(value) {
+      if (this.value < value) {
+        this.$emit('change', value)
+      }
+    },
+  },
   data() {
     return {}
   },

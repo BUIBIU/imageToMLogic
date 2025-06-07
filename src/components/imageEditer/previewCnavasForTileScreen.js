@@ -1,23 +1,16 @@
 //图像处理类
 export default class PreviewCanvas {
-  //屏幕相关数据
-  screenData = {
-    normal: {
-      url: require('@/assets/images/blocks/logic/logic-display.png'),
-      image: null,
-      resolution: 80,
-      border: 8,
-      size: 96,
-      type: 'logic-display',
-    },
-    large: {
-      url: require('@/assets/images/blocks/logic/large-logic-display.png'),
-      image: null,
-      resolution: 176,
-      border: 8,
-      size: 192,
-      type: 'large-logic-display',
-    },
+  url = require('@/assets/images/blocks/logic/tile-logic-display.png')
+  image = null
+  borders = {
+    top: null,
+    bottom: null,
+    left: null,
+    right: null,
+    top_left: null,
+    top_right: null,
+    bottom_left: null,
+    bottom_right: null,
   }
   //屏幕相关设置
   screenOption = {
@@ -27,7 +20,11 @@ export default class PreviewCanvas {
       y: 1,
     },
     //当前选择的屏幕数据
-    screenData: null,
+    screenData: {
+      size: 32,
+      border: 3,
+      type: 'tile-logic-display',
+    },
     //是否忽略边框
     ignoreBorder: true,
     //压缩等级
@@ -51,16 +48,14 @@ export default class PreviewCanvas {
     this.readyPromise = new Promise(resolve => {
       this.readyResolve = resolve
     })
-    this.initImageFile().then(() => {
+    ;(async () => {
+      await this.initImageFile()
       this.outputImage = image
-      const { type, x, y, ignoreBorder, image: inputImage, compress } = options
-      this.setScreenType(type || 'large')
+      this.getBorders()
+      const { x, y, image: inputImage, compress } = options
       this.setScreenCount(x || 1, y || 1)
       if (inputImage) {
         this.setImage(inputImage)
-      }
-      if (ignoreBorder !== undefined) {
-        this.setSreenIgnoreBorder(ignoreBorder)
       }
       if (compress !== undefined) {
         this.setCompress(compress)
@@ -68,50 +63,57 @@ export default class PreviewCanvas {
       this.canRefresh = true
       this.refreshOutputImage()
       this.readyResolve()
-    })
+    })()
   }
   afterReady() {
     return this.readyPromise
   }
   //初始化图片处理器，预加载图片资源
   initImageFile() {
-    function getImage(url) {
-      return new Promise((resolve, reject) => {
-        const img = new Image()
-        img.addEventListener('load', function (e) {
-          resolve(this)
-        })
-        img.addEventListener('error', () => {
-          console.error(`Failed to get image(${url})`)
-          reject()
-        })
-        img.src = url
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.addEventListener('load', e => {
+        this.image = img
+        resolve(img)
       })
-    }
-    const requestList = []
-    for (let key in this.screenData) {
-      const item = this.screenData[key]
-      const request = getImage(item.url).then(res => {
-        item.image = res
+      img.addEventListener('error', () => {
+        console.error(`Failed to get image(${url})`)
+        reject()
       })
-      requestList.push(request)
-    }
-    return Promise.all(requestList)
+      img.src = this.url
+    })
   }
-  //设置当前的屏幕类型）
-  setScreenType(name) {
-    this.screenOption.screenData = this.screenData[name]
-    this.refreshOutputImage()
+  getBorders() {
+    const canvas = document.createElement('canvas')
+    canvas.width = 32
+    canvas.height = 32
+    const ctx = canvas.getContext('2d', { willReadFrequently: true })
+    ctx.drawImage(this.image, 0, 0)
+    this.borders.top_left = ctx.getImageData(0, 0, 6, 6)
+    this.borders.top_right = ctx.getImageData(26, 0, 6, 6)
+    this.borders.bottom_left = ctx.getImageData(0, 26, 6, 6)
+    this.borders.bottom_right = ctx.getImageData(26, 26, 6, 6)
+    this.borders.top = ctx.getImageData(6, 0, 20, 6)
+    this.borders.left = ctx.getImageData(0, 6, 6, 20)
+    this.borders.right = ctx.getImageData(26, 6, 6, 20)
+    this.borders.bottom = ctx.getImageData(6, 26, 20, 6)
+    ctx.clearRect(0, 0, 32, 32)
+    ctx.putImageData(this.borders.top, 0, 0)
+    ctx.putImageData(this.borders.top, 12, 0)
+    this.borders.top = ctx.getImageData(0, 0, 32, 6)
+    ctx.putImageData(this.borders.left, 0, 0)
+    ctx.putImageData(this.borders.left, 0, 12)
+    this.borders.left = ctx.getImageData(0, 0, 6, 32)
+    ctx.putImageData(this.borders.right, 26, 0)
+    ctx.putImageData(this.borders.right, 26, 12)
+    this.borders.right = ctx.getImageData(26, 0, 6, 32)
+    ctx.putImageData(this.borders.bottom, 0, 26)
+    ctx.putImageData(this.borders.bottom, 12, 26)
+    this.borders.bottom = ctx.getImageData(0, 26, 32, 6)
   }
   //设置当前的屏幕数量
   setScreenCount(x, y) {
     this.screenOption.screenCount = { x, y }
-    // this.refreshOutputImage()
-  }
-  //设置是否忽略边框
-  setSreenIgnoreBorder(ignoreBorder) {
-    this.screenOption.ignoreBorder = ignoreBorder
-    // this.refreshOutputImage()
   }
   //绘制处理后的图像
   drawImage() {
@@ -120,6 +122,7 @@ export default class PreviewCanvas {
     const ctx = canvas.getContext('2d')
     ctx.fillStyle = 'rgb(0,0,0)'
     ctx.fillRect(0, 0, canvas.width, canvas.height)
+    // console.log(canvas);
     this.drawScreens(canvas)
     return canvas
   }
@@ -137,64 +140,49 @@ export default class PreviewCanvas {
     const ctx = canvas.getContext('2d')
     const screenX = this.screenOption.screenCount.x
     const screenY = this.screenOption.screenCount.y
-    const { size, image, border, resolution } = this.screenOption.screenData
     //绘制屏幕边框
-    for (let y = 0; y < screenY; y++) {
-      for (let x = 0; x < screenX; x++) {
-        let posX = x * size
-        let posY = y * size
-        ctx.drawImage(image, posX, posY)
-      }
+    for (let x = 0; x < screenX; x++) {
+      ctx.putImageData(this.borders.top, x * 32, 0)
+      ctx.putImageData(this.borders.bottom, x * 32, screenY * 32 - 6)
     }
-    //绘制切片后的各个图像
+    for (let y = 0; y < screenY; y++) {
+      ctx.putImageData(this.borders.left, 0, y * 32)
+      ctx.putImageData(this.borders.right, screenX * 32 - 6, y * 32)
+    }
+    ctx.putImageData(this.borders.top_left, 0, 0)
+    ctx.putImageData(this.borders.top_right, screenX * 32 - 6, 0)
+    ctx.putImageData(this.borders.bottom_left, 0, screenY * 32 - 6)
+    ctx.putImageData(
+      this.borders.bottom_right,
+      screenX * 32 - 6,
+      screenY * 32 - 6,
+    )
+
     if (!this.inputImage) {
       return
     }
-    const imageWidth = this.inputImage.width
-    const imageHeight = this.inputImage.height
-    let scale = 0
-    if (this.screenOption.ignoreBorder) {
-      scale = imageWidth / (size * screenX - 2 * border)
-    } else {
-      scale = imageWidth / (resolution * screenX)
-    }
-    const realSizeX = resolution * scale
-    const realSizeY = realSizeX
-    for (let y = 0; y < screenY; y++) {
-      for (let x = 0; x < screenX; x++) {
-        const posX = x * size
-        const posY = y * size
-        let cutPosX = 0
-        let cutPosY = 0
-        if (this.screenOption.ignoreBorder) {
-          cutPosX = (x * (resolution + 2 * border) * scale) | 0
-          cutPosY = (y * (resolution + 2 * border) * scale) | 0
-        } else {
-          cutPosX = (x * resolution * scale) | 0
-          cutPosY = (y * resolution * scale) | 0
-        }
-        let processCanvas = document.createElement('canvas')
-        this.processCanvasList.push(processCanvas)
-        processCanvas.width = resolution
-        processCanvas.height = resolution
-        let processCtx = processCanvas.getContext('2d')
-        processCtx.drawImage(
-          this.inputImage,
-          cutPosX,
-          cutPosY,
-          realSizeX,
-          realSizeY,
-          0,
-          0,
-          resolution,
-          resolution,
-        )
-        this.compressImage(processCanvas)
-        let imageData = processCtx.getImageData(0, 0, resolution, resolution)
-        ctx.putImageData(imageData, posX + border, posY + border)
-        // ctx.drawImage(this.inputImage, cutPosX, cutPosY, realSizeX, realSizeY, posX + border, posY + border, resolution, resolution)
-      }
-    }
+    const imgWidth = canvas.width - 6
+    const imgHeight = canvas.height - 6
+    const drawWidth = canvas.width - 12
+    const drawHeight = canvas.height - 12
+    let processCanvas = document.createElement('canvas')
+    let processCtx = processCanvas.getContext('2d')
+    processCanvas.width = imgWidth
+    processCanvas.height = imgHeight
+    processCtx.drawImage(this.inputImage, 0, 0, imgWidth, imgHeight)
+    this.compressImage(processCanvas)
+    this.processCanvasList.push(processCanvas)
+    ctx.drawImage(
+      processCanvas,
+      0,
+      0,
+      imgWidth,
+      imgHeight,
+      6,
+      6,
+      drawWidth,
+      drawHeight,
+    )
   }
   //输出处理后的预览图片地址
   output(canvas) {
@@ -224,14 +212,10 @@ export default class PreviewCanvas {
   //返回当前真实裁剪的长宽比（忽略边框时，裁剪的区域的长宽比不等于屏幕数量的长宽比）
   getAspect() {
     const { x, y } = this.screenOption.screenCount
-    if (this.screenOption.ignoreBorder) {
-      const { size, border } = this.screenOption.screenData
-      const width = x * size - 2 * border
-      const height = y * size - 2 * border
-      return [1, height / width]
-    } else {
-      return [1, y / x]
-    }
+    const { size } = this.screenOption.screenData
+    const width = x * size - 6
+    const height = y * size - 6
+    return [1, height / width]
   }
   //设置压缩强度
   setCompress(n) {

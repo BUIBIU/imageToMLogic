@@ -1,4 +1,5 @@
 import CodeToMsch from './CodeToMsch' // eslint-disable-line
+import CodeToMschForTileScreen from './CodeToMschForTileScreen' // eslint-disable-line
 import ImageToCode from './ImageToCode' // eslint-disable-line
 // self.postMessage('tset', 'test1')
 onmessage = function (event) {
@@ -27,7 +28,9 @@ onmessage = function (event) {
     state: 'percentage',
     data: '正在生成蓝图',
   })
-  const codeToMsch = new CodeToMsch(
+  const codeToMschMaker =
+    screenType === 'tile-logic-display' ? CodeToMschForTileScreen : CodeToMsch
+  const codeToMsch = new codeToMschMaker(
     code,
     screenName,
     screenType,

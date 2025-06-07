@@ -32,7 +32,12 @@
     </div>
     <div style="margin-top: 20px">
       <!-- 点击选择图片按钮 -->
-      <mButton icon="load" text="选择图片" @click="getFile" style="margin-right: 10px;" />
+      <mButton
+        icon="load"
+        text="选择图片"
+        @click="getFile"
+        style="margin-right: 10px"
+      />
       <!-- 被隐藏的input标签 -->
       <input
         type="file"
@@ -44,22 +49,28 @@
       <mButton icon="planet" text="使用教程" @click="jumpToVideo" />
     </div>
     <div class="setting">
-      <!-- 分辨率 -->
+      <!-- 屏幕类型 -->
       <div class="form-item">
         <div class="form-item-label">
-          <span>分辨率</span>
+          <span>屏幕类型</span>
         </div>
         <div class="button-grid">
           <mButton
-            :checked="option.resolution === 176"
+            :checked="option.screenType === 'tile'"
             :url="largeLogicDisplayUrl"
-            text="176"
+            text="逻辑显示单元"
+            @click="setScreenType('tile')"
+          />
+          <mButton
+            :checked="option.screenType === 'large'"
+            :url="largeLogicDisplayUrl"
+            text="大型逻辑显示屏"
             @click="setScreenType('large')"
           />
           <mButton
-            :checked="option.resolution === 80"
+            :checked="option.screenType === 'normal'"
             :url="logicDisplayUrl"
-            text="80"
+            text="逻辑显示屏"
             @click="setScreenType('normal')"
           />
         </div>
@@ -73,13 +84,13 @@
           <mNumberCounter
             v-model="option.screenX"
             :min="1"
-            :max="4"
+            :max="isTileScreen ? 16 : 4"
             @change="screenSizeChange"
           />
           <mNumberCounter
             v-model="option.screenY"
             :min="1"
-            :max="4"
+            :max="isTileScreen ? 16 : 4"
             @change="screenSizeChange"
           />
         </div>
@@ -100,7 +111,13 @@
         </div>
       </div>
       <!-- 忽略边框 -->
-      <div class="form-item" v-if="option.screenX > 1 || option.screenY > 1">
+      <div
+        class="form-item"
+        v-if="
+          option.screenType !== 'tile' &&
+          (option.screenX > 1 || option.screenY > 1)
+        "
+      >
         <span class="form-item-label">忽略边框</span>
         <div class="button-grid">
           <mButton
@@ -117,19 +134,22 @@
       </div>
       <!-- 显示器名称 -->
       <div class="form-item">
-        <div class="form-item-label">显示器</div>
-        <div class="form-item-input"><mInput v-model="option.screenName" @input="changeScreenName" />
+        <div class="form-item-label">显示屏</div>
+        <div class="form-item-input">
+          <mInput v-model="option.screenName" @input="changeScreenName" />
         </div>
       </div>
       <!-- 蓝图名称 -->
       <div class="form-item">
         <div class="form-item-label">蓝图名称</div>
-        <div class="form-item-input"><mInput v-model="option.mschName" /> </div>
+        <div class="form-item-input"><mInput v-model="option.mschName" /></div>
       </div>
       <!-- 蓝图描述 -->
       <div class="form-item">
         <div class="form-item-label">蓝图描述</div>
-        <div class="form-item-input"><mInput v-model="option.mschDescription" /> </div>
+        <div class="form-item-input">
+          <mInput v-model="option.mschDescription" />
+        </div>
       </div>
       <!-- 导出形式 -->
       <div class="form-item">
@@ -218,6 +238,7 @@ import mInput from '@/components/ui/input'
 import mNumberCounter from '@/components/ui/numberCounter'
 //引入图像处理类
 import PreviewCnavas from './previewCnavas.js'
+import PreviewCnavasForTileScreen from './previewCnavasForTileScreen.js'
 // import CodeToMsch from './CodeToMsch'
 import WorkerController from './WorkerController.js'
 export default {
@@ -238,16 +259,16 @@ export default {
       haveImage: false,
       //图像处理基本设置
       option: {
-        //分辨率
-        resolution: 176,
+        //屏幕类型
+        screenType: 'tile',
         //压缩强度
         compress: 5,
         //屏幕名称
         screenName: 'display1',
         //屏幕x轴数量
-        screenX: 1,
+        screenX: 16,
         //屏幕y轴数量
-        screenY: 1,
+        screenY: 16,
         //裁剪长宽比
         aspect: [1, 1],
         //是否忽略边框
@@ -278,6 +299,11 @@ export default {
       exportingState: '',
     }
   },
+  computed: {
+    isTileScreen() {
+      return this.option.screenType === 'tile'
+    },
+  },
   methods: {
     //加载图片，获取文件后触发
     loadFile(e) {
@@ -305,7 +331,13 @@ export default {
         this.option.screenX,
         this.option.screenY,
       )
-      this.option.aspect = this.previewCnavas.getAspect()
+      const lastAspect = this.option.aspect
+      const newAspect = this.previewCnavas.getAspect()
+
+      if (lastAspect[0] == newAspect[0] && lastAspect[1] == newAspect[1]) {
+        this.cropperChanged()
+      }
+      this.option.aspect = newAspect
       this.$nextTick(() => {
         //裁剪组件更新裁剪框长宽比
         this.$refs.cropper.goAutoCrop()
@@ -317,16 +349,41 @@ export default {
       this.$refs.fileInput.click()
     },
     //设置屏幕类型
-    setScreenType(type) {
-      switch (type) {
-        case 'normal':
-          this.option.resolution = 80
-          this.previewCnavas.setScreenType('normal')
-          break
-        case 'large':
-          this.option.resolution = 176
-          this.previewCnavas.setScreenType('large')
-          break
+    async setScreenType(type) {
+      const lastType = this.option.screenType
+      if (type == 'tile') {
+        this.option.screenType = 'tile'
+        this.option.screenX = 16
+        this.option.screenY = 16
+        if (lastType !== 'tile') {
+          this.previewCnavas = new PreviewCnavasForTileScreen(
+            this.$refs.previewImage,
+            {
+              x: this.option.screenX,
+              y: this.option.screenY,
+              compress: this.option.compress,
+            },
+          )
+          await this.previewCnavas.afterReady()
+          this.screenSizeChange()
+        }
+      } else {
+        if (lastType === 'tile') {
+          this.option.screenX = 1
+          this.option.screenY = 1
+          this.previewCnavas = new PreviewCnavas(this.$refs.previewImage, {
+            type,
+            x: this.option.screenX,
+            y: this.option.screenY,
+            ignoreBorder: this.option.ignoreBorder,
+            compress: this.option.compress,
+          })
+          await this.previewCnavas.afterReady()
+          this.screenSizeChange()
+        } else {
+          this.previewCnavas.setScreenType(type)
+        }
+        this.option.screenType = type
       }
       this.imageChanged()
     },
@@ -346,6 +403,7 @@ export default {
         this.previewTimer = setTimeout(() => {
           this.$refs.cropper.getCropData(data => {
             this.previewCnavas.setImage(data)
+            console.log(151515)
           })
           this.imageChanged()
         }, 100)
@@ -387,7 +445,6 @@ export default {
     },
     //改变屏幕名称时调用
     changeScreenName() {
-      this.previewCnavas.setScreenName(this.option.screenName)
       this.imageChanged()
     },
     //将代码复制进剪贴板
@@ -452,9 +509,14 @@ export default {
   //页面加载完毕调用
   mounted() {
     //创建图像处理实例
-    this.previewCnavas = new PreviewCnavas(this.$refs.previewImage)
-    //初始化屏幕名称
-    this.changeScreenName()
+    this.previewCnavas = new PreviewCnavasForTileScreen(
+      this.$refs.previewImage,
+      {
+        x: this.option.screenX,
+        y: this.option.screenY,
+        compress: this.option.compress,
+      },
+    )
   },
   //页面被清除前调用
   destroyed() {
@@ -533,7 +595,7 @@ export default {
     align-items: center;
     flex-shrink: 0;
   }
-  .form-item-input{
+  .form-item-input {
     display: flex;
     align-items: center;
   }
