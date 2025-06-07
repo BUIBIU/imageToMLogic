@@ -140,6 +140,10 @@ export default class PreviewCanvas {
     const ctx = canvas.getContext('2d')
     const screenX = this.screenOption.screenCount.x
     const screenY = this.screenOption.screenCount.y
+
+    ctx.fillStyle = 'rgb(86,86,102)'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
     //绘制屏幕边框
     for (let x = 0; x < screenX; x++) {
       ctx.putImageData(this.borders.top, x * 32, 0)
