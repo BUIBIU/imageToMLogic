@@ -46,7 +46,13 @@
         @change="loadFile"
         ref="fileInput"
       />
-      <mButton icon="planet" text="使用教程" @click="jumpToVideo" />
+      <mButton
+        icon="planet"
+        text="使用教程"
+        @click="jumpToVideo"
+        style="margin-right: 10px"
+      />
+      <mButton icon="github" text="GitHub" @click="jumpToGitHub" />
     </div>
     <div class="setting">
       <!-- 屏幕类型 -->
@@ -504,6 +510,9 @@ export default {
     },
     jumpToVideo() {
       window.open('https://www.bilibili.com/video/BV1TD4y1t7DN')
+    },
+    jumpToGitHub() {
+      window.open('https://github.com/BUIBIU/imageToMLogic')
     },
   },
   //页面加载完毕调用
