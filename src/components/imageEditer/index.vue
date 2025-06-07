@@ -62,12 +62,6 @@
         </div>
         <div class="button-grid">
           <mButton
-            :checked="option.screenType === 'tile'"
-            :url="largeLogicDisplayUrl"
-            text="逻辑显示单元"
-            @click="setScreenType('tile')"
-          />
-          <mButton
             :checked="option.screenType === 'large'"
             :url="largeLogicDisplayUrl"
             text="大型逻辑显示屏"
@@ -78,6 +72,12 @@
             :url="logicDisplayUrl"
             text="逻辑显示屏"
             @click="setScreenType('normal')"
+          />
+          <mButton
+            :checked="option.screenType === 'tile'"
+            :url="largeLogicDisplayUrl"
+            text="逻辑显示单元"
+            @click="setScreenType('tile')"
           />
         </div>
       </div>
@@ -266,15 +266,15 @@ export default {
       //图像处理基本设置
       option: {
         //屏幕类型
-        screenType: 'tile',
+        screenType: 'large',
         //压缩强度
         compress: 5,
         //屏幕名称
         screenName: 'display1',
         //屏幕x轴数量
-        screenX: 16,
+        screenX: 1,
         //屏幕y轴数量
-        screenY: 16,
+        screenY: 1,
         //裁剪长宽比
         aspect: [1, 1],
         //是否忽略边框
@@ -343,12 +343,16 @@ export default {
       if (lastAspect[0] == newAspect[0] && lastAspect[1] == newAspect[1]) {
         this.cropperChanged()
       }
-      this.option.aspect = newAspect
-      this.$nextTick(() => {
-        //裁剪组件更新裁剪框长宽比
-        this.$refs.cropper.goAutoCrop()
-      })
-      this.imageChanged()
+      if (this.haveImage && !this.loading) {
+        this.option.aspect = newAspect
+        this.$nextTick(() => {
+          //裁剪组件更新裁剪框长宽比
+          this.$refs.cropper.goAutoCrop()
+        })
+        this.imageChanged()
+      } else {
+        this.previewCnavas.refreshOutputImage()
+      }
     },
     //模拟点击上传input
     getFile() {
@@ -409,7 +413,6 @@ export default {
         this.previewTimer = setTimeout(() => {
           this.$refs.cropper.getCropData(data => {
             this.previewCnavas.setImage(data)
-            console.log(151515)
           })
           this.imageChanged()
         }, 100)
@@ -455,7 +458,6 @@ export default {
     },
     //将代码复制进剪贴板
     copyCode(chip) {
-      console.log(chip)
       this.code = chip.code
       this.$set(chip, 'copyed', true)
       this.$nextTick(() => {
@@ -518,14 +520,13 @@ export default {
   //页面加载完毕调用
   mounted() {
     //创建图像处理实例
-    this.previewCnavas = new PreviewCnavasForTileScreen(
-      this.$refs.previewImage,
-      {
-        x: this.option.screenX,
-        y: this.option.screenY,
-        compress: this.option.compress,
-      },
-    )
+    this.previewCnavas = new PreviewCnavas(this.$refs.previewImage, {
+      type: 'large',
+      x: this.option.screenX,
+      y: this.option.screenY,
+      ignoreBorder: this.option.ignoreBorder,
+      compress: this.option.compress,
+    })
   },
   //页面被清除前调用
   destroyed() {
